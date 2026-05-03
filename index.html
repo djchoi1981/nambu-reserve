@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <script>
+        if (window.location.protocol === "file:") {
+            alert("경고: 현재 파일을 직접 열어서 보안이 차단되었습니다! 주소창에 반드시 http://localhost:8000 을 입력해서 접속해주세요.");
+        }
+    </script>
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            alert("JS Error: " + msg + "\nLine: " + line);
+        };
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교회 일정 조율 프로그램</title>
+    
+    <!-- Google Fonts: Inter & Noto Sans KR -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar / Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <a href="https://www.nambooch.or.kr/" target="_blank" title="남부전원교회 홈페이지로 이동">
+                    <img src="logo.jpg" alt="남부전원교회" class="church-logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMzAiPjx0ZXh0IHg9IjAiIHk9IjIwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiPuyCrOynhOydhCDsspjtg4A8L3RleHQ+PC9zdmc+'">
+                </a>
+            </div>
+            <nav>
+                <a href="#" id="nav-calendar" class="nav-item active"><i class="ph ph-calendar-blank"></i> 통합 캘린더</a>
+                <a href="#" id="nav-committee" class="nav-item"><i class="ph ph-users-three"></i> <span class="lbl-menu-committee">위원회/부서 일정</span></a>
+                <a href="#" id="nav-cell" class="nav-item"><i class="ph ph-users"></i> <span class="lbl-menu-cell">셀/모임 장소예약</span></a>
+                <a href="#" id="nav-vehicle" class="nav-item"><i class="ph ph-car"></i> <span class="lbl-menu-vehicle">차량 운영예약</span></a>
+                
+            </nav>
+            <div class="upcoming-summary" style="flex: 1; overflow-y: auto;">
+                <h3>다가오는 일정</h3>
+                <div class="upcoming-list" id="upcoming-list-mini">
+                    <!-- Javascript will populate upcoming events here -->
+                </div>
+            </div>
+            <div class="sidebar-footer" style="padding-top: 1rem; border-top: 1px solid var(--border); margin-top: auto;">
+                <a href="#" id="sidebar-admin-btn" class="nav-item"><i class="ph ph-gear"></i> 관리자 모드</a>
+                <a href="#" id="sidebar-logout-btn" class="nav-item" style="color: var(--danger); display: none; margin-top: 0.5rem;"><i class="ph ph-sign-out"></i> 로그아웃</a>
+            </div>
+        </aside>
+        
+        <!-- Sidebar Overlay -->
+        <div id="sidebar-overlay" class="sidebar-overlay" style="display: none;"></div>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header" style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); background-color: var(--surface);">
+                <div class="header-left" style="width: 100%; display: flex; align-items: center;">
+                    <button id="mobile-menu-btn" class="icon-btn mobile-menu-btn" style="display: none; margin-right: 0.5rem;"><i class="ph ph-list"></i></button>
+                    <div class="month-navigation" style="width: 100%; display: flex; align-items: center;">
+                        <button id="prev-month" class="icon-btn"><i class="ph ph-caret-left"></i></button>
+                        <span id="current-month-display">2026년 4월</span>
+                        <button id="next-month" class="icon-btn"><i class="ph ph-caret-right"></i></button>
+                        <button id="today-btn" class="btn btn-outline btn-sm" style="margin-left: 1rem;">오늘</button>
+                        <label id="month-filter-label" style="display: none; margin-left: 1rem; align-items: center; gap: 0.25rem; font-size: 0.9rem; cursor: pointer; color: var(--text); white-space: nowrap;">
+                            <input type="checkbox" id="month-filter-checkbox">
+                            해당 월만 보기
+                        </label>
+                        
+                        <select id="calendar-filter" class="filter-select" style="margin-left: auto;">
+                            <option value="all">모든 예약 보기</option>
+                            <option value="committee" id="opt-cal-committee">위원회/부서 일정만</option>
+                            <option value="cell" id="opt-cal-cell">셀/모임 장소예약만</option>
+                            <option value="vehicle" id="opt-cal-vehicle">차량 운영예약만</option>
+                        </select>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-grid">
+                <!-- Calendar View -->
+                <section class="calendar-section card" id="calendar-view">
+                    <div class="calendar-header">
+                        <div class="weekday">일</div>
+                        <div class="weekday">월</div>
+                        <div class="weekday">화</div>
+                        <div class="weekday">수</div>
+                        <div class="weekday">목</div>
+                        <div class="weekday">금</div>
+                        <div class="weekday">토</div>
+                    </div>
+                    <div class="calendar-body" id="calendar-grid">
+                        <!-- Javascript will populate days here -->
+                    </div>
+                </section>
+
+                <!-- Committee View (Hidden by default) -->
+                <section class="list-section card" id="committee-view" style="display: none;">
+                    <div class="card-header">
+                        <h3><i class="ph ph-users-three"></i> <span class="lbl-menu-committee">위원회/부서 일정</span> 현황</h3>
+                        <div class="filter-group" style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                            <select id="filter-committee" class="filter-select">
+                                <option value="all">모든 위원회 보기</option>
+                            </select>
+                            <select id="filter-department" class="filter-select">
+                                <option value="all">모든 부서 보기</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="department-list-body" id="committee-list-container">
+                    </div>
+                </section>
+                
+                <!-- Cell View (Hidden by default) -->
+                <section class="list-section card" id="cell-view" style="display: none;">
+                    <div class="card-header">
+                        <h3><i class="ph ph-users"></i> <span class="lbl-menu-cell">셀/모임 장소예약</span> 현황</h3>
+                        <div class="filter-group" style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                            <input type="text" id="filter-cell-name" class="filter-select" placeholder="모임명 검색" style="padding: 0.375rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                        </div>
+                    </div>
+                    <div class="department-list-body" id="cell-list-container">
+                    </div>
+                </section>
+
+                <!-- Vehicle View (Hidden by default) -->
+                <section class="list-section card" id="vehicle-view" style="display: none;">
+                    <div class="card-header">
+                        <h3><i class="ph ph-car"></i> <span class="lbl-menu-vehicle">차량 운영예약</span> 현황</h3>
+                        <div class="filter-group" style="margin-top: 1rem;">
+                            <select id="filter-vehicle" class="filter-select">
+                                <option value="all">모든 차량 보기</option>
+                                <!-- populated by JS -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="department-list-body" id="vehicle-list-container">
+                    </div>
+                </section>
+
+                <!-- Admin View (Hidden by default) -->
+                <section class="admin-section card" id="admin-view" style="display: none;">
+                    <div class="card-header">
+                        <h3><i class="ph ph-gear"></i> 시스템 관리자 설정</h3>
+                        <p>예약 목록을 일괄 관리하고, 메뉴명과 조직도를 편집하며, 관리자 비밀번호를 변경할 수 있습니다.</p>
+                    </div>
+                    <div class="admin-body">
+                        
+                        <div class="admin-panel" style="grid-column: 1 / -1;">
+                            <h4><i class="ph ph-list-dashes"></i> 전체 예약 일괄 관리 (Master Schedule)</h4>
+                            <div class="filter-group" style="margin-bottom: 1rem;">
+                                <select id="admin-event-filter" class="filter-select">
+                                    <option value="all">모든 예약 보기</option>
+                                    <option value="committee" id="opt-adm-committee">위원회/부서 일정만</option>
+                                    <option value="cell" id="opt-adm-cell">셀/모임 예약만</option>
+                                    <option value="vehicle" id="opt-adm-vehicle">차량 운영예약만</option>
+                                </select>
+                            </div>
+                            <div class="department-list-body" id="admin-events-container" style="max-height: 400px; overflow-y: auto; background: var(--background); border-radius: var(--radius-md); padding: 1rem;">
+                                <!-- Javascript will populate master event list here -->
+                            </div>
+                        </div>
+
+                        <div class="admin-panel">
+                            <h4><i class="ph ph-text-t"></i> 메뉴명 설정</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">좌측 탭과 상단 타이틀에 표시될 이름을 변경합니다.</p>
+                            <div class="form-group">
+                                <label>1번 탭 메뉴명</label>
+                                <input type="text" id="admin-name-committee" placeholder="예: 위원회/부서 일정">
+                            </div>
+                            <div class="form-group">
+                                <label>2번 탭 메뉴명</label>
+                                <input type="text" id="admin-name-cell" placeholder="예: 셀/모임 장소예약">
+                            </div>
+                            <div class="form-group">
+                                <label>3번 탭 메뉴명</label>
+                                <input type="text" id="admin-name-vehicle" placeholder="예: 차량 운영예약">
+                            </div>
+                            <button type="button" id="save-menu-names-btn" class="btn btn-primary" style="margin-top: 0.5rem;">메뉴명 저장</button>
+                        </div>
+
+                        <div class="admin-panel">
+                            <h4><i class="ph ph-tree-structure"></i> 조직도 (위원회 및 부서) 관리</h4>
+                            <div class="add-dept-form">
+                                <input type="text" id="new-committee-name" placeholder="새 위원회 이름 (예: 예배위원회)">
+                                <button type="button" id="add-committee-btn" class="btn btn-primary">위원회 추가</button>
+                            </div>
+                            <div class="org-manage-container" id="org-manage-container">
+                                <!-- Javascript will populate org chart here -->
+                            </div>
+                        </div>
+                        
+                        <div class="admin-panel">
+                            <h4><i class="ph ph-map-pin"></i> 장소(룸) 관리</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">셀/모임 및 위원회 예약 시 선택할 수 있는 장소 목록입니다.</p>
+                            <div class="add-dept-form">
+                                <input type="text" id="new-room-name" placeholder="새 장소 이름 (예: 비전센터 1층 식당)">
+                                <button type="button" id="add-room-btn" class="btn btn-primary">장소 추가</button>
+                            </div>
+                            <div class="org-manage-container" style="margin-top: 1rem;">
+                                <div class="org-committee-card" style="margin-bottom: 0;">
+                                    <ul class="org-dept-list" id="admin-rooms-list" style="margin: 0; padding-top: 0;">
+                                        <!-- populated by JS -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-panel">
+                            <h4><i class="ph ph-car"></i> 차량 관리</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">예약할 수 있는 교회 차량 목록입니다.</p>
+                            <div class="add-dept-form">
+                                <input type="text" id="new-vehicle-name" placeholder="새 차량 이름 (예: 카니발 1호)">
+                                <button type="button" id="add-vehicle-btn" class="btn btn-primary">차량 추가</button>
+                            </div>
+                            <div class="org-manage-container" style="margin-top: 1rem;">
+                                <div class="org-committee-card" style="margin-bottom: 0;">
+                                    <ul class="org-dept-list" id="admin-vehicles-list" style="margin: 0; padding-top: 0;">
+                                        <!-- populated by JS -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-panel">
+                            <h4><i class="ph ph-lock-key"></i> 관리자 비밀번호 변경</h4>
+                            <div class="password-form">
+                                <input type="password" id="current-password" placeholder="현재 비밀번호">
+                                <input type="password" id="new-password" placeholder="새 비밀번호">
+                                <button type="button" id="change-pw-btn" class="btn btn-outline">비밀번호 변경</button>
+                            </div>
+                            <p id="pw-change-msg" style="margin-top: 0.5rem; font-size: 0.875rem; display: none;"></p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Registration Form (Hidden on Calendar and Admin view) -->
+                <section class="registration-section card" id="registration-section" style="display: none;">
+                    <div class="card-header">
+                        <h3 id="form-title"><i class="ph ph-calendar-plus"></i> 예약 등록</h3>
+                        <p>일정 정보를 입력해 주세요.</p>
+                    </div>
+                    <form id="event-form" style="display: flex; flex-direction: column;">
+                        
+                        <input type="hidden" id="current-event-type" value="committee">
+
+                        <div id="conflict-alert" class="conflict-alert" style="display: none; order: 1;">
+                            <i class="ph-fill ph-warning"></i>
+                            <div id="conflict-message">해당 시간/장소에 이미 겹치는 일정이 있습니다!</div>
+                        </div>
+
+
+
+                        <!-- Type A: Committee -->
+                        <div id="fields-committee" class="type-fields" style="display: none; order: 2;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="committee">위원회 <span class="required" style="color: var(--danger);">*</span></label>
+                                    <select id="committee">
+                                        <option value="" disabled selected>선택하세요</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="department">하위 부서 <span class="required" style="color: var(--danger);">*</span></label>
+                                    <select id="department">
+                                        <option value="" disabled selected>위원회를 먼저 선택하세요</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="title-committee">행사 제목 <span class="required" style="color: var(--danger);">*</span></label>
+                                <input type="text" id="title-committee" placeholder="예: 여름 성경학교">
+                            </div>
+                        </div>
+
+                        <!-- Type B: Cell / Group -->
+                        <div id="fields-cell" class="type-fields" style="display: none; order: 2;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="cellName">셀/모임명 <span class="required" style="color: var(--danger);">*</span></label>
+                                    <input type="text" id="cellName" placeholder="예: 바나바 1셀, 청년부 임원진">
+                                </div>
+                                <div class="form-group">
+                                    <label for="reserver-cell">예약자 성명 <span class="required" style="color: var(--danger);">*</span></label>
+                                    <input type="text" id="reserver-cell" placeholder="예: 홍길동">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="title-cell">모임 목적 (선택)</label>
+                                <input type="text" id="title-cell" placeholder="예: 임원진 회의, 셀 모임">
+                            </div>
+                        </div>
+
+                        <!-- Type C: Vehicle -->
+                        <div id="fields-vehicle" class="type-fields" style="display: none; order: 2;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="vehicle">차량 선택 <span class="required" style="color: var(--danger);">*</span></label>
+                                    <select id="vehicle">
+                                        <option value="" disabled selected>선택하세요</option>
+                                        <option value="스타렉스 1호">스타렉스 1호</option>
+                                        <option value="스타렉스 2호">스타렉스 2호</option>
+                                        <option value="스타렉스 3호">스타렉스 3호</option>
+                                        <option value="스타리아">스타리아</option>
+                                        <option value="25인승 버스">25인승 버스</option>
+                                        <option value="45인승 버스">45인승 버스</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reserver-vehicle">예약자 성명 <span class="required" style="color: var(--danger);">*</span></label>
+                                    <input type="text" id="reserver-vehicle" placeholder="예: 이순신">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="title-vehicle">운행 목적 (제목) <span class="required" style="color: var(--danger);">*</span></label>
+                                <input type="text" id="title-vehicle" placeholder="예: 학생부 수련회 운행">
+                            </div>
+                        </div>
+
+                        <!-- Common Fields -->
+                        <div class="form-row" style="order: 3;">
+                            <div class="form-group" style="width: 100%;">
+                                <label for="date">날짜 <span class="required" style="color: var(--danger);">*</span></label>
+                                <input type="date" id="date" required>
+                            </div>
+                        </div>
+                        <div class="form-row" id="time-container" style="order: 4;">
+                            <div class="form-group">
+                                <label for="start-time">시작 시간 <span class="required" style="color: var(--danger);">*</span></label>
+                                <input type="time" id="start-time" step="600" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="end-time">종료 시간 <span class="required" style="color: var(--danger);">*</span></label>
+                                <input type="time" id="end-time" step="600" required>
+                            </div>
+                        </div>
+                        <div id="unavailable-times-info" style="display: none; order: 4; margin-top: -0.5rem; color: var(--danger); font-size: 0.85rem; padding: 0.5rem; background-color: rgba(239, 68, 68, 0.1); border-radius: 4px;">
+                            <!-- populated by JS -->
+                        </div>
+
+                        <div class="form-group" id="location-container" style="order: 5;">
+                            <label for="location" id="location-label">장소 <span class="required" id="location-required" style="color: var(--danger);">*</span></label>
+                            <select id="location-select" required>
+                                <option value="" disabled selected>장소를 선택하세요</option>
+                                <!-- options populated by JS -->
+                            </select>
+                            <input type="text" id="location-input" placeholder="직접 입력 (예: 본당, 소예배실)" style="display: none; margin-top: 0.5rem;" required>
+                        </div>
+                        
+                        <div class="form-group" style="order: 6;">
+                            <label for="description">상세 내용 (선택)</label>
+                            <textarea id="description" rows="3" placeholder="기타 필요한 내용을 입력하세요"></textarea>
+                        </div>
+
+                        <!-- Password for Edit/Delete -->
+                        <div class="form-group" style="border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 1rem; order: 7;">
+                            <label for="event-password">비밀번호 (수정/삭제용) <span class="required" style="color: var(--danger);">*</span></label>
+                            <input type="password" id="event-password" placeholder="4자리 이상 숫자/문자" required>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">이 비밀번호는 나중에 일정을 수정하거나 삭제할 때 필요합니다.</p>
+                        </div>
+
+                        <input type="hidden" id="edit-event-id">
+
+                        <div class="form-actions" style="order: 8; display: flex; flex-direction: column; gap: 0.5rem;">
+                            <button type="submit" class="btn btn-primary btn-block" id="submit-event-btn">예약 등록하기</button>
+                            <button type="button" class="btn btn-outline btn-block" id="cancel-edit-btn" style="display: none;">수정 취소</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">
+        <i class="ph ph-check-circle"></i>
+        <span id="toast-message">등록되었습니다.</span>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>관리자 로그인</h3>
+                <button class="close-modal" id="close-login-btn"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-muted);">조직도 관리 및 시스템 설정을 위해 로그인하세요.</p>
+                <div class="form-group">
+                    <input type="password" id="login-password" placeholder="비밀번호를 입력하세요">
+                </div>
+                <p id="login-error" style="color: var(--danger); font-size: 0.875rem; margin-top: 0.5rem; display: none;">비밀번호가 일치하지 않습니다.</p>
+                <button type="button" id="submit-login-btn" class="btn btn-primary btn-block" style="margin-top: 1rem;">로그인</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Event Details & Actions Modal -->
+    <div id="event-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>상세 정보</h3>
+                <button class="close-modal" id="close-event-btn"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="event-detail-content">
+                </div>
+                <div id="event-action-auth" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                    <p style="font-size: 0.875rem; margin-bottom: 0.5rem;">수정/삭제를 위해 등록 시 입력한 비밀번호를 입력하세요.<br>(관리자로 로그인 시 생략 가능)</p>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="password" id="event-action-password" placeholder="비밀번호" style="flex: 1;">
+                        <button type="button" id="btn-edit-event" class="btn btn-primary btn-sm">수정</button>
+                        <button type="button" id="btn-delete-event" class="btn btn-danger btn-sm">삭제</button>
+                    </div>
+                    <p id="event-action-error" style="color: var(--danger); font-size: 0.875rem; margin-top: 0.5rem; display: none;">비밀번호가 일치하지 않습니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirm-modal" class="modal-overlay" style="display: none; z-index: 2000;">
+        <div class="modal-content" style="max-width: 400px; text-align: center; padding: 2rem;">
+            <div class="modal-body">
+                <i class="ph ph-warning-circle" style="font-size: 3rem; color: var(--danger); margin-bottom: 1rem;"></i>
+                <h3 id="confirm-title" style="margin-bottom: 0.5rem; font-size: 1.25rem;">삭제 확인</h3>
+                <p id="confirm-message" style="margin-bottom: 1.5rem; color: var(--text-muted); font-size: 0.9rem;"></p>
+                <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                    <button type="button" id="confirm-cancel-btn" class="btn btn-outline" style="flex: 1;">취소</button>
+                    <button type="button" id="confirm-ok-btn" class="btn btn-danger" style="flex: 1;">삭제</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Day Events Modal (Mobile) -->
+    <div id="day-events-modal" class="modal-overlay" style="display: none; z-index: 1500;">
+        <div class="modal-content" style="max-width: 400px; margin: 1rem;">
+            <div class="modal-header">
+                <h3 id="day-events-title">일정 목록</h3>
+                <button class="close-modal" id="close-day-events-btn"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="day-events-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 60vh; overflow-y: auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
