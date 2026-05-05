@@ -114,6 +114,10 @@ const defaultOrganization = [
     const dateInput = document.getElementById('date');
     const startTimeInput = document.getElementById('start-time');
     const endTimeInput = document.getElementById('end-time');
+    const startHour = document.getElementById('start-hour');
+    const startMinute = document.getElementById('start-minute');
+    const endHour = document.getElementById('end-hour');
+    const endMinute = document.getElementById('end-minute');
     const unavailableTimesInfo = document.getElementById('unavailable-times-info');
     const locationSelect = document.getElementById('location-select');
     const locationInput = document.getElementById('location-input');
@@ -161,6 +165,7 @@ const defaultOrganization = [
     const closeDayEventsBtn = document.getElementById('close-day-events-btn');
     const dayEventsTitle = document.getElementById('day-events-title');
     const dayEventsList = document.getElementById('day-events-list');
+    const btnAddEventFromModal = document.getElementById('btn-add-event-from-modal');
 
     // Auth & Admin DOM
     
@@ -540,8 +545,66 @@ const defaultOrganization = [
     // Conflict detection listeners
     const triggerConflictCheck = () => checkForConflicts(editEventIdInput.value !== '' ? editEventIdInput.value : null);
     dateInput.addEventListener('change', triggerConflictCheck);
-    startTimeInput.addEventListener('change', triggerConflictCheck);
-    endTimeInput.addEventListener('change', triggerConflictCheck);
+    
+    function populateTimeSelects() {
+        let hourOptions = '<option value="" disabled selected>시</option>';
+        for (let i = 0; i < 24; i++) {
+            const h = String(i).padStart(2, '0');
+            hourOptions += `<option value="${h}">${h}</option>`;
+        }
+        startHour.innerHTML = hourOptions;
+        endHour.innerHTML = hourOptions;
+
+        let minuteOptions = '<option value="" disabled selected>분</option>';
+        for (let i = 0; i < 60; i += 10) {
+            const m = String(i).padStart(2, '0');
+            minuteOptions += `<option value="${m}">${m}</option>`;
+        }
+        startMinute.innerHTML = minuteOptions;
+        endMinute.innerHTML = minuteOptions;
+    }
+    populateTimeSelects();
+
+    function syncTimeSelectsToHidden() {
+        if (startHour.value && startMinute.value) {
+            startTimeInput.value = `${startHour.value}:${startMinute.value}`;
+        } else {
+            startTimeInput.value = '';
+        }
+        if (endHour.value && endMinute.value) {
+            endTimeInput.value = `${endHour.value}:${endMinute.value}`;
+        } else {
+            endTimeInput.value = '';
+        }
+    }
+
+    function syncHiddenToTimeSelects() {
+        if (startTimeInput.value) {
+            const [sh, sm] = startTimeInput.value.split(':');
+            startHour.value = sh;
+            startMinute.value = sm;
+        } else {
+            startHour.value = '';
+            startMinute.value = '';
+        }
+        if (endTimeInput.value) {
+            const [eh, em] = endTimeInput.value.split(':');
+            endHour.value = eh;
+            endMinute.value = em;
+        } else {
+            endHour.value = '';
+            endMinute.value = '';
+        }
+    }
+
+    [startHour, startMinute, endHour, endMinute].forEach(el => {
+        if(el) {
+            el.addEventListener('change', () => {
+                syncTimeSelectsToHidden();
+                triggerConflictCheck();
+            });
+        }
+    });
     locationInput.addEventListener('blur', triggerConflictCheck);
     document.getElementById('vehicle').addEventListener('change', triggerConflictCheck);
     committeeSelect.addEventListener('change', () => {
@@ -771,6 +834,21 @@ const defaultOrganization = [
         });
     }
 
+    if (btnAddEventFromModal) {
+        btnAddEventFromModal.addEventListener('click', () => {
+            dayEventsModal.style.display = 'none';
+            const dateStr = dayEventsTitle.textContent.replace(' 일정', '');
+            
+            const calFilterVal = calendarFilter.value;
+            if (calFilterVal === 'cell') navCell.click();
+            else if (calFilterVal === 'vehicle') navVehicle.click();
+            else navCommittee.click();
+            
+            dateInput.value = dateStr;
+            document.getElementById('registration-section').scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+
     btnEditEvent.addEventListener('click', () => {
         const ev = events.find(e => e.id === currentEventIdForAction);
         if(!ev) return;
@@ -790,6 +868,7 @@ const defaultOrganization = [
         dateInput.value = ev.date;
         startTimeInput.value = ev.startTime;
         endTimeInput.value = ev.endTime;
+        syncHiddenToTimeSelects();
         if (ev.eventType === 'vehicle') {
             locationInput.value = ev.location;
         } else {
@@ -987,9 +1066,19 @@ const defaultOrganization = [
         cell.appendChild(eventsContainer);
         cell.appendChild(dotsContainer);
         
-        cell.addEventListener('click', () => {
+        cell.addEventListener('click', (e) => {
+            if (e.target.closest('.event-tag')) return; // Ignore event tag clicks
+
             if (window.innerWidth <= 768 && dayEvents.length > 0) {
                 showDayEventsModal(dateString, dayEvents);
+            } else {
+                const calFilterVal = calendarFilter.value;
+                if (calFilterVal === 'cell') navCell.click();
+                else if (calFilterVal === 'vehicle') navVehicle.click();
+                else navCommittee.click();
+                
+                dateInput.value = dateString;
+                document.getElementById('registration-section').scrollIntoView({ behavior: 'smooth' });
             }
         });
         
