@@ -448,6 +448,21 @@
         </div>
     </div>
 
+    <!-- Reservation Type Selection Modal -->
+    <div id="reservation-type-modal" class="modal-overlay" style="display: none; z-index: 1600;">
+        <div class="modal-content" style="max-width: 400px; padding: 1.5rem;">
+            <div class="modal-header">
+                <h3>예약 메뉴 선택</h3>
+                <button class="close-modal" id="close-reservation-type-btn"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+                <button type="button" class="btn" id="btn-type-committee" style="background-color: var(--primary); color: white; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md); border: none; cursor: pointer;"><i class="ph ph-users-three"></i> <span class="lbl-menu-committee">위원회/부서 일정</span></button>
+                <button type="button" class="btn" id="btn-type-cell" style="background-color: #10b981; color: white; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md); border: none; cursor: pointer;"><i class="ph ph-users"></i> <span class="lbl-menu-cell">셀/모임 장소예약</span></button>
+                <button type="button" class="btn" id="btn-type-vehicle" style="background-color: #f59e0b; color: white; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md); border: none; cursor: pointer;"><i class="ph ph-car"></i> <span class="lbl-menu-vehicle">차량 운영예약</span></button>
+            </div>
+        </div>
+    </div>
+
     <!-- Day Events Modal (Mobile) -->
     <div id="day-events-modal" class="modal-overlay" style="display: none; z-index: 1500;">
         <div class="modal-content" style="max-width: 400px; margin: 1rem;">

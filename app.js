@@ -167,6 +167,14 @@ const defaultOrganization = [
     const dayEventsList = document.getElementById('day-events-list');
     const btnAddEventFromModal = document.getElementById('btn-add-event-from-modal');
 
+    // Reservation Type Modal
+    const reservationTypeModal = document.getElementById('reservation-type-modal');
+    const closeReservationTypeBtn = document.getElementById('close-reservation-type-btn');
+    const btnTypeCommittee = document.getElementById('btn-type-committee');
+    const btnTypeCell = document.getElementById('btn-type-cell');
+    const btnTypeVehicle = document.getElementById('btn-type-vehicle');
+    let pendingReservationDate = null;
+
     // Auth & Admin DOM
     
     
@@ -837,17 +845,32 @@ const defaultOrganization = [
     if (btnAddEventFromModal) {
         btnAddEventFromModal.addEventListener('click', () => {
             dayEventsModal.style.display = 'none';
-            const dateStr = dayEventsTitle.textContent.replace(' 일정', '');
-            
-            const calFilterVal = calendarFilter.value;
-            if (calFilterVal === 'cell') navCell.click();
-            else if (calFilterVal === 'vehicle') navVehicle.click();
-            else navCommittee.click();
-            
-            dateInput.value = dateStr;
-            document.getElementById('registration-section').scrollIntoView({ behavior: 'smooth' });
+            pendingReservationDate = dayEventsTitle.textContent.replace(' 일정', '');
+            reservationTypeModal.style.display = 'flex';
         });
     }
+
+    if (closeReservationTypeBtn) {
+        closeReservationTypeBtn.addEventListener('click', () => {
+            reservationTypeModal.style.display = 'none';
+        });
+    }
+
+    [btnTypeCommittee, btnTypeCell, btnTypeVehicle].forEach(btn => {
+        if(btn) {
+            btn.addEventListener('click', () => {
+                reservationTypeModal.style.display = 'none';
+                if (!pendingReservationDate) return;
+
+                if (btn.id === 'btn-type-committee') navCommittee.click();
+                else if (btn.id === 'btn-type-cell') navCell.click();
+                else if (btn.id === 'btn-type-vehicle') navVehicle.click();
+                
+                dateInput.value = pendingReservationDate;
+                document.getElementById('registration-section').scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+    });
 
     btnEditEvent.addEventListener('click', () => {
         const ev = events.find(e => e.id === currentEventIdForAction);
@@ -1072,13 +1095,8 @@ const defaultOrganization = [
             if (window.innerWidth <= 768 && dayEvents.length > 0) {
                 showDayEventsModal(dateString, dayEvents);
             } else {
-                const calFilterVal = calendarFilter.value;
-                if (calFilterVal === 'cell') navCell.click();
-                else if (calFilterVal === 'vehicle') navVehicle.click();
-                else navCommittee.click();
-                
-                dateInput.value = dateString;
-                document.getElementById('registration-section').scrollIntoView({ behavior: 'smooth' });
+                pendingReservationDate = dateString;
+                reservationTypeModal.style.display = 'flex';
             }
         });
         
