@@ -1278,7 +1278,13 @@ const defaultOrganization = [
             filteredEvents = filteredEvents.filter(e => e.department === filterD);
         }
 
+        const todayStr = formatLocalISODate(new Date());
         filteredEvents.sort((a, b) => {
+            const isAPast = a.date < todayStr;
+            const isBPast = b.date < todayStr;
+            if (isAPast && !isBPast) return 1;
+            if (!isAPast && isBPast) return -1;
+
             if (a.date !== b.date) return a.date.localeCompare(b.date);
             return a.startTime.localeCompare(b.startTime);
         });
@@ -1298,6 +1304,11 @@ const defaultOrganization = [
             const item = document.createElement('div');
             item.className = 'department-item';
             item.style.borderLeftColor = getCommitteeColor(e.committee);
+            
+            if (e.date < todayStr) {
+                item.style.opacity = '0.5';
+                item.style.filter = 'grayscale(100%)';
+            }
             
             item.innerHTML = `
                 <div class="dept-item-info">
@@ -1337,7 +1348,13 @@ const defaultOrganization = [
             filteredEvents = filteredEvents.filter(e => e.cellName.toLowerCase().includes(filterVal));
         }
 
+        const todayStr = formatLocalISODate(new Date());
         filteredEvents.sort((a, b) => {
+            const isAPast = a.date < todayStr;
+            const isBPast = b.date < todayStr;
+            if (isAPast && !isBPast) return 1;
+            if (!isAPast && isBPast) return -1;
+
             if (a.date !== b.date) return a.date.localeCompare(b.date);
             return a.startTime.localeCompare(b.startTime);
         });
@@ -1357,6 +1374,11 @@ const defaultOrganization = [
             const item = document.createElement('div');
             item.className = 'department-item';
             item.style.borderLeftColor = '#10b981';
+            
+            if (e.date < todayStr) {
+                item.style.opacity = '0.5';
+                item.style.filter = 'grayscale(100%)';
+            }
             
             item.innerHTML = `
                 <div class="dept-item-info">
@@ -1396,7 +1418,13 @@ const defaultOrganization = [
             filteredEvents = filteredEvents.filter(e => e.vehicle === filterVal);
         }
 
+        const todayStr = formatLocalISODate(new Date());
         filteredEvents.sort((a, b) => {
+            const isAPast = a.date < todayStr;
+            const isBPast = b.date < todayStr;
+            if (isAPast && !isBPast) return 1;
+            if (!isAPast && isBPast) return -1;
+
             if (a.date !== b.date) return a.date.localeCompare(b.date);
             return a.startTime.localeCompare(b.startTime);
         });
@@ -1416,6 +1444,11 @@ const defaultOrganization = [
             const item = document.createElement('div');
             item.className = 'department-item';
             item.style.borderLeftColor = '#f59e0b';
+            
+            if (e.date < todayStr) {
+                item.style.opacity = '0.5';
+                item.style.filter = 'grayscale(100%)';
+            }
             
             item.innerHTML = `
                 <div class="dept-item-info">
@@ -1465,8 +1498,14 @@ const defaultOrganization = [
             filteredEvents = events.filter(e => e.eventType === filterVal);
         }
         
+        const todayStr = formatLocalISODate(new Date());
         // Sort newest first or by date
         filteredEvents.sort((a, b) => {
+            const isAPast = a.date < todayStr;
+            const isBPast = b.date < todayStr;
+            if (isAPast && !isBPast) return 1;
+            if (!isAPast && isBPast) return -1;
+
             if (a.date !== b.date) return b.date.localeCompare(a.date);
             return b.startTime.localeCompare(a.startTime);
         });
@@ -1502,6 +1541,11 @@ const defaultOrganization = [
             
             item.style.borderLeftColor = color;
             item.style.backgroundColor = '#fff';
+            
+            if (e.date < todayStr) {
+                item.style.opacity = '0.5';
+                item.style.filter = 'grayscale(100%)';
+            }
             
             item.innerHTML = `
                 <div class="dept-item-info">
